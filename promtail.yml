@@ -15,3 +15,28 @@ scrape_configs:
         labels:
           job: docker
           __path__: /var/lib/docker/containers/*/*.log
+
+    pipeline_stages:
+
+      # tenta interpretar JSON (não quebra se não for JSON)
+      - json:
+          expressions:
+            service: service
+            level: level
+            stage: stage
+            intent: intent
+            client_id: client_id
+            latency_ms: latency_ms
+            msg: msg
+          drop_malformed: false
+
+      # transforma campos em labels (se existirem)
+      - labels:
+          service:
+          level:
+          stage:
+          intent
+
+      # fallback: mantém mensagem original
+      - output:
+          source: msg
