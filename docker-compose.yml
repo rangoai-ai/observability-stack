@@ -32,6 +32,8 @@ services:
   promtail:
     image: grafana/promtail:3.0.0
     volumes:
+      # Docker socket: necessário para docker_sd_configs descobrir containers automaticamente.
+      # Concede ao Promtail acesso de leitura à API Docker — não expor a porta do Promtail externamente.
       - /var/run/docker.sock:/var/run/docker.sock
       - ./promtail.yml:/etc/promtail/config.yml
     command: -config.file=/etc/promtail/config.yml
