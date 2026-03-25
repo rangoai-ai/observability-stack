@@ -25,7 +25,7 @@ scrape_configs:
       - docker: {}
 
       # Parseia JSON da app e extrai campos para o mapa interno do Promtail
-      # Containers que não emitem JSON são ignorados silenciosamente
+      # Containers que não emitem JSON passam como texto bruto (sem labels), não são descartados
       - json:
           expressions:
             service: service
