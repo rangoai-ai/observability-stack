@@ -6,6 +6,7 @@ services:
       - "13000:3000"
     volumes:
       - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
     environment:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: admin
@@ -29,12 +30,13 @@ services:
     restart: unless-stopped
 
   promtail:
-    image: grafana/promtail:latest
+    image: grafana/promtail:3.0.0
     volumes:
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      - /var/log:/var/log
+      - /var/run/docker.sock:/var/run/docker.sock
       - ./promtail.yml:/etc/promtail/config.yml
     command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
     restart: unless-stopped
 
   node-exporter:
