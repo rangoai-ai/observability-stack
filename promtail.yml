@@ -9,34 +9,38 @@ clients:
 
 scrape_configs:
   - job_name: docker
-    static_configs:
-      - targets:
-          - localhost
-        labels:
-          job: docker
-          __path__: /var/lib/docker/containers/*/*.log
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+
+    relabel_configs:
+      # Extrai nome do container como label (remove a "/" inicial do nome Docker)
+      - source_labels: [__meta_docker_container_name]
+        target_label: container
+        regex: /(.*)
+        replacement: $1
 
     pipeline_stages:
+      # Desempacota o envelope Docker: {"log": "...", "stream": "...", "time": "..."}
+      # Após este stage, a linha do log é o JSON da app
+      - docker: {}
 
-      # tenta interpretar JSON (não quebra se não for JSON)
+      # Parseia JSON da app e extrai campos para o mapa interno do Promtail
+      # Containers que não emitem JSON são ignorados silenciosamente
       - json:
           expressions:
             service: service
             level: level
             stage: stage
-            intent: intent
-            client_id: client_id
-            latency_ms: latency_ms
-            msg: msg
-          drop_malformed: false
+            message: message
 
-      # transforma campos em labels (se existirem)
+      # Promove campos para labels Loki (baixa cardinalidade apenas)
+      # NÃO adicionar: conversation_id, phone_number (alta cardinalidade)
       - labels:
           service:
           level:
           stage:
-          intent
 
-      # fallback: mantém mensagem original
+      # Define a mensagem final exibida no Grafana Explore
+      # "message" refere-se ao campo extraído pelo stage json acima
       - output:
-          source: msg
+          source: message
