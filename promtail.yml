@@ -31,14 +31,16 @@ scrape_configs:
             service: service
             level: level
             stage: stage
+            logger: logger
             message: message
 
       # Promove campos para labels Loki (baixa cardinalidade apenas)
-      # NÃO adicionar: conversation_id, phone_number (alta cardinalidade)
+      # NÃO adicionar: conversation_id, phone_number, request_id, restaurant_id, order_id (alta cardinalidade)
       - labels:
           service:
           level:
           stage:
+          logger:
 
       # Define a mensagem final exibida no Grafana Explore
       # "message" refere-se ao campo extraído pelo stage json acima
